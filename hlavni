@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stánek s pivem - Krásenský pivovar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: url('https://www.krasenskypivovar.cz/img/bg2.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #ecf0f1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2, h3 {
+            color: #ecf0f1;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .form-tile {
+            background-color: #2c3e50;
+            border: 1px solid #34495e;
+            border-radius: 10px;
+            margin: 10px;
+            padding: 20px;
+            cursor: pointer;
+            text-align: center;
+            width: calc(25% - 20px);
+            max-width: 300px;
+            transition: background-color 0.3s, transform 0.3s;
+            color: #ecf0f1;
+        }
+        .form-tile:hover {
+            background-color: #1abc9c;
+            transform: scale(1.05);
+        }
+        .order-summary {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #7f8c8d;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            background-color: #34495e;
+            color: #ecf0f1;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 5px 0;
+        }
+        .remove-button {
+            background-color: #e74c3c;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .remove-button:hover {
+            background-color: #c0392b;
+        }
+        .quantity-input, .size-input {
+            width: 100px;
+            text-align: center;
+            border: 1px solid #d1aa67;
+            border-radius: 5px;
+            margin: 0 10px;
+            color: #2c3e50;
+            background-color: #d1aa67;
+            font-size: 16px;
+            padding: 5px;
+        }
+        .quantity-input option, .size-input option {
+            background-color: #d1aa67;
+            color: #2c3e50;
+        }
+        .submit-button {
+            background-color: #d1aa67;
+            border: none;
+            color: #2c3e50;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .submit-button:hover {
+            background-color: #e0b87f;
+            transform: scale(1.05);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            border-radius: 10px;
+        }
+        .modal-content span {
+            font-size: 36px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .modal-content label {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .close-button, .calculate-change-button {
+            background-color: #d1aa67;
+            border: none;
+            color: #2c3e50;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .close-button:hover, .calculate-change-button:hover {
+            background-color: #e0b87f;
+            transform: scale(1.05);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #7f8c8d;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+        }
+        td {
+            background-color: #34495e;
+            color: #ecf0f1;
+        }
+
+        @media (max-width: 768px) {
+            .form-tile {
+                width: calc(50% - 20px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-tile {
+                width: calc(100% - 20px);
+            }
+            .modal-content {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Stánek s pivem - Krásenský pivovar</h1>
+    <div class="container">
+        <div class="form-tile" id="portas-tile">
+            <h3>Portáš 11</h3>
+            <form id="portas-form">
+                <input type="hidden" name="name" value="Portáš 11">
+                <input type="hidden" name="price" value="50">
+                <label for="size">Velikost:</label>
+                <select id="size-portas" name="size" class="size-input">
+                    <option value="0.3">0,3l</option>
+                    <option value="0.5">0,5l</option>
+                </select>
+                <label for="quantity">Množství:</label>
+                <select id="quantity-portas" name="quantity" class="quantity-input">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <button type="submit" class="submit-button">Přidat do objednávky</button>
+            </form>
+        </div>
+        <div class="form-tile" id="krasenska-12-tile">
+            <h3>Krásenská 12</h3>
+            <form id="krasenska-12-form">
+                <input type="hidden" name="name" value="Krásenská 12">
+                <input type="hidden" name="price" value="45">
+                <label for="size">Velikost:</label>
+                <select id="size-krasenska-12" name="size" class="size-input">
+                    <option value="0.3">0,3l</option>
+                    <option value="0.5">0,5l</option>
+                </select>
+                <label for="quantity">Množství:</label>
+                <select id="quantity-krasenska-12" name="quantity" class="quantity-input">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <button type="submit" class="submit-button">Přidat do objednávky</button>
+            </form>
+        </div>
+        <div class="form-tile" id="krasenska-13-tile">
+            <h3>Krásenská 13</h3>
+            <form id="krasenska-13-form">
+                <input type="hidden" name="name" value="Krásenská 13">
+                <input type="hidden" name="price" value="60">
+                <label for="size">Velikost:</label>
+                <select id="size-krasenska-13" name="size" class="size-input">
+                    <option value="0.3">0,3l</option>
+                    <option value="0.5">0,5l</option>
+                </select>
+                <label for="quantity">Množství:</label>
+                <select id="quantity-krasenska-13" name="quantity" class="quantity-input">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <button type="submit" class="submit-button">Přidat do objednávky</button>
+            </form>
+        </div>
+        <div class="form-tile" id="virgil-tile">
+            <h3>Virgil 12</h3>
+            <form id="virgil-form">
+                <input type="hidden" name="name" value="Virgil 12">
+                <input type="hidden" name="price" value="55">
+                <label for="size">Velikost:</label>
+                <select id="size-virgil" name="size" class="size-input">
+                    <option value="0.3">0,3l</option>
+                    <option value="0.5">0,5l</option>
+                </select>
+                <label for="quantity">Množství:</label>
+                <select id="quantity-virgil" name="quantity" class="quantity-input">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <button type="submit" class="submit-button">Přidat do objednávky</button>
+            </form>
+        </div>
+        <div class="form-tile" id="pale-ale-tile">
+            <h3>PALE ALE 14</h3>
+            <form id="pale-ale-form">
+                <input type="hidden" name="name" value="PALE ALE 14">
+                <input type="hidden" name="price" value="50">
+                <label for="size">Velikost:</label>
+                <select id="size-pale-ale" name="size" class="size-input">
+                    <option value="0.3">0,3l</option>
+                    <option value="0.5">0,5l</option>
+                </select>
+                <label for="quantity">Množství:</label>
+                <select id="quantity-pale-ale" name="quantity" class="quantity-input">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <button type="submit" class="submit-button">Přidat do objednávky</button>
+            </form>
+        </div>
+        <div class="form-tile" id="return-cups-tile">
+            <h3>Vratka kelímku</h3>
+            <form id="return-cups-form">
+                <input type="hidden" name="name" value="Vratka kelímku">
+                <input type="hidden" name="price" value="-50">
+                <label for="quantity">Množství:</label>
+                <select id="quantity-return-cups" name="quantity" class="quantity-input">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                    <option value="16">16</option>
+                    <option value="17">17</option>
+                    <option value="18">18</option>
+                    <option value="19">19</option>
+                    <option value="20">20</option>
+                </select>
+                <button type="submit" class="submit-button">Přidat do objednávky</button>
+            </form>
+        </div>
+    </div>
+    <div class="order-summary">
+        <h2>Objednávka</h2>
+        <ul id="order-list"></ul>
+        <p><strong>Celkem: <span id="total-price">0</span> Kč</strong></p>
+        <button id="complete-order" class="submit-button">Dokončit objednávku</button>
+    </div>
+
+    <div id="total-modal" class="modal">
+        <div class="modal-content">
+            <span id="total-modal-text"></span>
+            <br><br>
+            <label for="received-amount">Částka přijatá:</label>
+            <input type="number" id="received-amount" class="size-input">
+            <br><br>
+            <label for="tip-amount">Částka po zaokrouhlení (včetně dýška):</label>
+            <input type="number" id="tip-amount" class="size-input">
+            <br><br>
+            <button id="calculate-change" class="calculate-change-button">Vypočítat vrácení</button>
+            <br><br>
+            <span id="change-text"></span>
+            <br><br>
+            <button id="close-modal" class="close-button">OK</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const orderList = $('#order-list');
+            const totalPriceElement = $('#total-price');
+            const orderSummary = {
+                'Portáš 11': { '0.3': { quantity: 0, total: 0 }, '0.5': { quantity: 0, total: 0 } },
+                'Krásenská 12': { '0.3': { quantity: 0, total: 0 }, '0.5': { quantity: 0, total: 0 } },
+                'Krásenská 13': { '0.3': { quantity: 0, total: 0 }, '0.5': { quantity: 0, total: 0 } },
+                'Virgil 12': { '0.3': { quantity: 0, total: 0 }, '0.5': { quantity: 0, total: 0 } },
+                'PALE ALE 14': { '0.3': { quantity: 0, total: 0 }, '0.5': { quantity: 0, total: 0 } }
+            };
+            const cupsSummary = { quantity: 0, total: 0 };
+            const orderHistory = [];
+            const cupsHistory = [];
+            const reportData = { totalAmount: 0, days: {} };
+
+            $('.form-tile form').submit(function(event) {
+                event.preventDefault();
+
+                const name = $(this).find('input[name="name"]').val();
+                const price = parseInt($(this).find('input[name="price"]').val());
+                const size = $(this).find('select[name="size"]').val() || '';
+                const quantity = parseInt($(this).find('select[name="quantity"]').val());
+                const totalPriceForItem = price * quantity;
+                const cupPrice = 50 * quantity;
+
+                if (name !== 'Vratka kelímku') {
+                    const listItem = $('<li>').addClass('order-item');
+                    const itemText = `${name} - ${price} Kč${size ? '/' + size + 'l' : ''}`;
+                    listItem.text(`${itemText} (Počet: ${quantity}, Celkem: ${totalPriceForItem + cupPrice} Kč)`);
+
+                    const removeButton = $('<button>').text('Odebrat').addClass('remove-button');
+                    removeButton.click(function() {
+                        listItem.remove();
+                        if (size) {
+                            orderSummary[name][size].quantity -= quantity;
+                            orderSummary[name][size].total -= totalPriceForItem;
+                        } else {
+                            cupsSummary.quantity -= quantity;
+                            cupsSummary.total -= totalPriceForItem;
+                        }
+                        updateTotalPrice();
+                    });
+
+                    listItem.append(removeButton);
+                    orderList.append(listItem);
+
+                    if (size) {
+                        orderSummary[name][size].quantity += quantity;
+                        orderSummary[name][size].total += totalPriceForItem;
+                        cupsSummary.quantity += quantity;
+                        cupsSummary.total += cupPrice;
+                    } else {
+                        cupsSummary.quantity += quantity;
+                        cupsSummary.total += totalPriceForItem;
+                    }
+                } else {
+                    const listItem = $('<li>').addClass('order-item');
+                    const itemText = `${name} - ${price} Kč`;
+                    listItem.text(`${itemText} (Počet: ${quantity}, Celkem: ${totalPriceForItem} Kč)`);
+
+                    const removeButton = $('<button>').text('Odebrat').addClass('remove-button');
+                    removeButton.click(function() {
+                        listItem.remove();
+                        cupsSummary.quantity -= quantity;
+                        cupsSummary.total -= totalPriceForItem;
+                        updateTotalPrice();
+                    });
+
+                    listItem.append(removeButton);
+                    orderList.append(listItem);
+
+                    cupsSummary.quantity -= quantity;
+                    cupsSummary.total -= totalPriceForItem;
+                }
+
+                updateTotalPrice();
+            });
+
+            function updateTotalPrice() {
+                let totalPrice = 0;
+                for (let beer in orderSummary) {
+                    for (let size in orderSummary[beer]) {
+                        totalPrice += orderSummary[beer][size].total;
+                    }
+                }
+                totalPrice += cupsSummary.total;
+                totalPriceElement.text(totalPrice);
+            }
+
+            function showReport() {
+                let reportHtml = '<table><tr><th>Den</th><th>Pivo</th><th>Velikost</th><th>Počet</th><th>Celkem (Kč)</th></tr>';
+                for (let day in reportData.days) {
+                    for (let beer in reportData.days[day].beers) {
+                        for (let size in reportData.days[day].beers[beer]) {
+                            reportHtml += `<tr><td>${day}</td><td>${beer}</td><td>${size}l</td><td>${reportData.days[day].beers[beer][size].quantity}</td><td>${reportData.days[day].beers[beer][size].total}</td></tr>`;
+                        }
+                    }
+                    reportHtml += `<tr><td>${day}</td><td>Kelímky</td><td></td><td>${reportData.days[day].cups.quantity}</td><td>${reportData.days[day].cups.total}</td></tr>`;
+                }
+                reportHtml += `<tr><td colspan="4">Celkem</td><td>${reportData.totalAmount} Kč</td></tr></table>`;
+                const reportWindow = window.open('', '', 'width=800,height=600');
+                reportWindow.document.write('<html><head><title>Report</title></head><body>');
+                reportWindow.document.write('<h1>Report</h1>');
+                reportWindow.document.write(reportHtml);
+                reportWindow.document.write('</body></html>');
+                reportWindow.document.close();
+            }
+
+            function completeOrder() {
+                let totalOrderPrice = parseInt(totalPriceElement.text());
+                const today = new Date().toLocaleDateString('cs-CZ');
+                orderHistory.push(JSON.parse(JSON.stringify(orderSummary)));
+                cupsHistory.push(JSON.parse(JSON.stringify(cupsSummary)));
+                reportData.totalAmount += totalOrderPrice;
+
+                if (!reportData.days[today]) {
+                    reportData.days[today] = { beers: JSON.parse(JSON.stringify(orderSummary)), cups: JSON.parse(JSON.stringify(cupsSummary)) };
+                } else {
+                    for (let beer in orderSummary) {
+                        for (let size in orderSummary[beer]) {
+                            reportData.days[today].beers[beer][size].quantity += orderSummary[beer][size].quantity;
+                            reportData.days[today].beers[beer][size].total += orderSummary[beer][size].total;
+                        }
+                    }
+                    reportData.days[today].cups.quantity += cupsSummary.quantity;
+                    reportData.days[today].cups.total += cupsSummary.total;
+                }
+
+                $('#total-modal-text').text(`Celková cena: ${totalOrderPrice} Kč`);
+                $('#total-modal').css('display', 'block');
+                resetOrder();
+            }
+
+            function resetOrder() {
+                orderList.empty();
+                for (let beer in orderSummary) {
+                    for (let size in orderSummary[beer]) {
+                        orderSummary[beer][size].quantity = 0;
+                        orderSummary[beer][size].total = 0;
+                    }
+                }
+                cupsSummary.quantity = 0;
+                cupsSummary.total = 0;
+                updateTotalPrice();
+                $('#received-amount').val('');
+                $('#tip-amount').val('');
+                $('#change-text').text('');
+            }
+
+            $('#complete-order').click(completeOrder);
+            $('#calculate-change').click(function() {
+                const receivedAmount = parseFloat($('#received-amount').val()) || 0;
+                const tipAmount = parseFloat($('#tip-amount').val()) || 0;
+                const totalOrderPrice = parseInt($('#total-modal-text').text().replace('Celková cena: ', '').replace(' Kč', ''));
+                const change = (tipAmount > 0 ? receivedAmount - tipAmount : receivedAmount - totalOrderPrice);
+                $('#change-text').text(`Vrátit: ${change} Kč`);
+            });
+            $('#close-modal').click(function() {
+                $('#total-modal').css('display', 'none');
+            });
+
+            const reportButton = $('<button>').text('Zobrazit report').addClass('submit-button');
+            reportButton.click(showReport);
+            $('body').append(reportButton);
+        });
+    </script>
+</body>
+</html>
