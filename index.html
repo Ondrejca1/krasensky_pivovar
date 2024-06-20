@@ -43,6 +43,12 @@
             background-color: #1abc9c;
             transform: scale(1.05);
         }
+        .form-tile.red {
+            background-color: #e74c3c;
+        }
+        .form-tile.red:hover {
+            background-color: #c0392b;
+        }
         .order-summary {
             margin-top: 20px;
             padding: 20px;
@@ -326,13 +332,65 @@
                 <button type="submit" class="submit-button">Přidat do objednávky</button>
             </form>
         </div>
-        <div class="form-tile" id="return-cups-tile">
+        <div class="form-tile" id="pet-lahve-tile">
+            <h3>Pet láhev 1L</h3>
+            <form id="pet-lahve-form">
+                <input type="hidden" name="name" value="Pet láhev 1L">
+                <input type="hidden" name="price" value="150">
+                <label for="quantity">Množství:</label>
+                <select id="quantity-pet-lahve" name="quantity" class="quantity-input">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <button type="submit" class="submit-button">Přidat do objednávky</button>
+            </form>
+        </div>
+        <div class="form-tile red" id="return-cups-tile">
             <h3>Vratka kelímku</h3>
             <form id="return-cups-form">
                 <input type="hidden" name="name" value="Vratka kelímku">
                 <input type="hidden" name="price" value="-50">
                 <label for="quantity">Množství:</label>
                 <select id="quantity-return-cups" name="quantity" class="quantity-input">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                    <option value="16">16</option>
+                    <option value="17">17</option>
+                    <option value="18">18</option>
+                    <option value="19">19</option>
+                    <option value="20">20</option>
+                </select>
+                <button type="submit" class="submit-button">Přidat do objednávky</button>
+            </form>
+        </div>
+        <div class="form-tile" id="prodej-kelimek-tile">
+            <h3>Prodej kelímku</h3>
+            <form id="prodej-kelimek-form">
+                <input type="hidden" name="name" value="Prodej kelímku">
+                <input type="hidden" name="price" value="50">
+                <label for="quantity">Množství:</label>
+                <select id="quantity-prodej-kelimek" name="quantity" class="quantity-input">
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -396,8 +454,10 @@
                 'PALE ALE 14': { '0.3': { quantity: 0, total: 0 }, '0.5': { quantity: 0, total: 0 } }
             };
             const cupsSummary = { quantity: 0, total: 0 };
+            const otherItemsSummary = { 'Pet láhev 1L': { quantity: 0, total: 0 }, 'Prodej kelímku': { quantity: 0, total: 0 } };
             const orderHistory = [];
             const cupsHistory = [];
+            const otherItemsHistory = [];
             const reportData = { totalAmount: 0, days: {} };
 
             $('.form-tile form').submit(function(event) {
@@ -410,7 +470,7 @@
                 const totalPriceForItem = price * quantity;
                 const cupPrice = 50 * quantity;
 
-                if (name !== 'Vratka kelímku') {
+                if (name !== 'Vratka kelímku' && name !== 'Pet láhev 1L' && name !== 'Prodej kelímku') {
                     const listItem = $('<li>').addClass('order-item');
                     const itemText = `${name} - ${price} Kč${size ? '/' + size + 'l' : ''}`;
                     listItem.text(`${itemText} (Počet: ${quantity}, Celkem: ${totalPriceForItem + cupPrice} Kč)`);
@@ -442,6 +502,24 @@
                         cupsSummary.quantity += quantity;
                         cupsSummary.total += totalPriceForItem;
                     }
+                } else if (name === 'Pet láhev 1L' || name === 'Prodej kelímku') {
+                    const listItem = $('<li>').addClass('order-item');
+                    const itemText = `${name} - ${price} Kč`;
+                    listItem.text(`${itemText} (Počet: ${quantity}, Celkem: ${totalPriceForItem} Kč)`);
+
+                    const removeButton = $('<button>').text('Odebrat').addClass('remove-button');
+                    removeButton.click(function() {
+                        listItem.remove();
+                        otherItemsSummary[name].quantity -= quantity;
+                        otherItemsSummary[name].total -= totalPriceForItem;
+                        updateTotalPrice();
+                    });
+
+                    listItem.append(removeButton);
+                    orderList.append(listItem);
+
+                    otherItemsSummary[name].quantity += quantity;
+                    otherItemsSummary[name].total += totalPriceForItem;
                 } else {
                     const listItem = $('<li>').addClass('order-item');
                     const itemText = `${name} - ${price} Kč`;
@@ -473,11 +551,14 @@
                     }
                 }
                 totalPrice += cupsSummary.total;
+                for (let item in otherItemsSummary) {
+                    totalPrice += otherItemsSummary[item].total;
+                }
                 totalPriceElement.text(totalPrice);
             }
 
             function showReport() {
-                let reportHtml = '<table><tr><th>Den</th><th>Pivo</th><th>Velikost</th><th>Počet</th><th>Celkem (Kč)</th></tr>';
+                let reportHtml = '<table><tr><th>Den</th><th>Položka</th><th>Velikost</th><th>Počet</th><th>Celkem (Kč)</th></tr>';
                 for (let day in reportData.days) {
                     for (let beer in reportData.days[day].beers) {
                         for (let size in reportData.days[day].beers[beer]) {
@@ -485,6 +566,8 @@
                         }
                     }
                     reportHtml += `<tr><td>${day}</td><td>Kelímky</td><td></td><td>${reportData.days[day].cups.quantity}</td><td>${reportData.days[day].cups.total}</td></tr>`;
+                    reportHtml += `<tr><td>${day}</td><td>Pet láhev 1L</td><td></td><td>${reportData.days[day].otherItems['Pet láhev 1L'].quantity}</td><td>${reportData.days[day].otherItems['Pet láhev 1L'].total}</td></tr>`;
+                    reportHtml += `<tr><td>${day}</td><td>Prodej kelímku</td><td></td><td>${reportData.days[day].otherItems['Prodej kelímku'].quantity}</td><td>${reportData.days[day].otherItems['Prodej kelímku'].total}</td></tr>`;
                 }
                 reportHtml += `<tr><td colspan="4">Celkem</td><td>${reportData.totalAmount} Kč</td></tr></table>`;
                 const reportWindow = window.open('', '', 'width=800,height=600');
@@ -500,10 +583,11 @@
                 const today = new Date().toLocaleDateString('cs-CZ');
                 orderHistory.push(JSON.parse(JSON.stringify(orderSummary)));
                 cupsHistory.push(JSON.parse(JSON.stringify(cupsSummary)));
+                otherItemsHistory.push(JSON.parse(JSON.stringify(otherItemsSummary)));
                 reportData.totalAmount += totalOrderPrice;
 
                 if (!reportData.days[today]) {
-                    reportData.days[today] = { beers: JSON.parse(JSON.stringify(orderSummary)), cups: JSON.parse(JSON.stringify(cupsSummary)) };
+                    reportData.days[today] = { beers: JSON.parse(JSON.stringify(orderSummary)), cups: JSON.parse(JSON.stringify(cupsSummary)), otherItems: JSON.parse(JSON.stringify(otherItemsSummary)) };
                 } else {
                     for (let beer in orderSummary) {
                         for (let size in orderSummary[beer]) {
@@ -513,6 +597,10 @@
                     }
                     reportData.days[today].cups.quantity += cupsSummary.quantity;
                     reportData.days[today].cups.total += cupsSummary.total;
+                    for (let item in otherItemsSummary) {
+                        reportData.days[today].otherItems[item].quantity += otherItemsSummary[item].quantity;
+                        reportData.days[today].otherItems[item].total += otherItemsSummary[item].total;
+                    }
                 }
 
                 $('#total-modal-text').text(`Celková cena: ${totalOrderPrice} Kč`);
@@ -530,6 +618,10 @@
                 }
                 cupsSummary.quantity = 0;
                 cupsSummary.total = 0;
+                for (let item in otherItemsSummary) {
+                    otherItemsSummary[item].quantity = 0;
+                    otherItemsSummary[item].total = 0;
+                }
                 updateTotalPrice();
                 $('#received-amount').val('');
                 $('#tip-amount').val('');
