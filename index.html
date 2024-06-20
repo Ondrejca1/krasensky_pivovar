@@ -85,6 +85,7 @@
         .quantity-input option, .size-input option {
             background-color: #d1aa67;
             color: #2c3e50;
+            text-align: center;
         }
         .submit-button {
             background-color: #d1aa67;
@@ -369,10 +370,10 @@
             <span id="total-modal-text"></span>
             <br><br>
             <label for="received-amount">Částka přijatá:</label>
-            <input type="number" id="received-amount" class="size-input">
+            <input type="number" id="received-amount" class="size-input" inputmode="numeric">
             <br><br>
             <label for="tip-amount">Částka po zaokrouhlení (včetně dýška):</label>
-            <input type="number" id="tip-amount" class="size-input">
+            <input type="number" id="tip-amount" class="size-input" inputmode="numeric">
             <br><br>
             <button id="calculate-change" class="calculate-change-button">Vypočítat vrácení</button>
             <br><br>
@@ -450,7 +451,7 @@
                     removeButton.click(function() {
                         listItem.remove();
                         cupsSummary.quantity -= quantity;
-                        cupsSummary.total += totalPriceForItem;
+                        cupsSummary.total -= totalPriceForItem;
                         updateTotalPrice();
                     });
 
@@ -458,7 +459,7 @@
                     orderList.append(listItem);
 
                     cupsSummary.quantity -= quantity;
-                    cupsSummary.total += totalPriceForItem;
+                    cupsSummary.total -= totalPriceForItem;
                 }
 
                 updateTotalPrice();
