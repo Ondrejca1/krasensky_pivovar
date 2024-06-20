@@ -164,6 +164,7 @@ $(document).ready(function() {
 
         $('#total-modal-text').text(`Celková cena: ${totalOrderPrice} Kč`);
         $('#total-modal').css('display', 'block');
+        $('#total-modal-text').css('color', '#2c3e50'); // Ensure text color is visible
         resetOrder();
     }
 
