@@ -65,6 +65,9 @@
             padding: 10px;
             border-radius: 5px;
         }
+        button.red {
+            background-color: #FF0000;
+        }
         .modal {
             display: none;
             position: fixed;
@@ -74,8 +77,7 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgb(0,0,0);
-            background-color: rgba(0,0,0,0.4);
+            background-color: rgba(0, 0, 0, 0.4);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -129,6 +131,8 @@
         <button onclick="showReport('all')">Sumář všech objednávek</button>
         <button onclick="showReport('daily')">Sumář za každý druh piva za den</button>
         <button onclick="showReport('totals')">Celkové částky za den</button>
+        <button class="red" onclick="resetReport()">Vynulovat report</button>
+        <button onclick="downloadReport()">Stáhnout report</button>
         <div id="report-items"></div>
     </div>
 
@@ -138,6 +142,7 @@
             <div id="quantity-container">
                 <!-- Quantity Tiles -->
             </div>
+            <button onclick="closeModal()">Zavřít</button>
         </div>
     </div>
 
@@ -185,12 +190,16 @@
             document.getElementById('quantity-modal').style.display = 'flex';
         }
 
+        function closeModal() {
+            document.getElementById('quantity-modal').style.display = 'none';
+        }
+
         function addToOrder(product, quantity) {
             for (let i = 0; i < quantity; i++) {
                 order.push(product);
             }
             renderOrderSummary();
-            document.getElementById('quantity-modal').style.display = 'none';
+            closeModal();
         }
 
         function renderOrderSummary() {
@@ -310,6 +319,25 @@
             div.innerText = `Celkem: ${totalSum} Kč`;
             const reportItems = document.getElementById('report-items');
             reportItems.appendChild(div);
+        }
+
+        function resetReport() {
+            if (confirm("Opravdu chcete vynulovat report?")) {
+                reports = [];
+                localStorage.setItem('reports', JSON.stringify(reports));
+                renderReport();
+                renderLastOrdersReport();
+            }
+        }
+
+        function downloadReport() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(reports, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "report.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
         }
 
         document.getElementById('received-amount').addEventListener('input', calculateChange);
