@@ -27,18 +27,20 @@
             text-align: center;
             border-radius: 10px;
             cursor: pointer;
-            transition: background-color 0.3s, transform 0.1s;
+            transition: background-color 0.3s, transform 0.1s, box-shadow 0.1s;
         }
-        .tile:active {
+        .tile:active, .tile.active {
             background-color: #0056b3;
             transform: scale(0.95);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
         .tile.red {
             background-color: #FF0000;
         }
-        .tile.red:active {
+        .tile.red:active, .tile.red.active {
             background-color: #cc0000;
             transform: scale(0.95);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
         .container {
             display: flex;
@@ -96,18 +98,20 @@
             padding: 15px;
             border-radius: 5px;
             font-size: 18px;
-            transition: background-color 0.3s, transform 0.1s;
+            transition: background-color 0.3s, transform 0.1s, box-shadow 0.1s;
         }
-        button:active {
+        button:active, button.active {
             background-color: #0056b3;
             transform: scale(0.95);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
         button.red {
             background-color: #FF0000;
         }
-        button.red:active {
+        button.red:active, button.red.active {
             background-color: #cc0000;
             transform: scale(0.95);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
         @media (max-width: 600px) {
             .tile {
@@ -201,6 +205,19 @@
                 order.push({ ...product, quantity: 1 });
             }
             renderOrderSummary();
+            highlightTile(product.name);
+        }
+
+        function highlightTile(productName) {
+            const tiles = document.querySelectorAll('.tile');
+            tiles.forEach(tile => {
+                if (tile.innerText.includes(productName)) {
+                    tile.classList.add('active');
+                    setTimeout(() => {
+                        tile.classList.remove('active');
+                    }, 300);
+                }
+            });
         }
 
         function updateQuantity(index, quantity) {
