@@ -71,6 +71,12 @@
             border-radius: 5px;
             cursor: pointer;
         }
+        .order-item input {
+            width: 50px;
+            margin-left: 10px;
+            padding: 5px;
+            text-align: center;
+        }
         button {
             cursor: pointer;
             background-color: #007BFF;
@@ -91,39 +97,6 @@
             .tile {
                 width: 22%;
             }
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.4);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 300px;
-            text-align: center;
-            border-radius: 10px;
-        }
-        .modal-content input {
-            width: 80%;
-            margin: 10px 0;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            text-align: center;
-            font-size: 20px;
         }
     </style>
 </head>
@@ -159,17 +132,6 @@
         <div id="report-items"></div>
     </div>
 
-    <div id="quantity-modal" class="modal">
-        <div class="modal-content">
-            <h2>Zadejte množství</h2>
-            <input type="number" id="quantity-input" inputmode="numeric" min="1">
-            <div>
-                <button onclick="confirmQuantity()">OK</button>
-                <button onclick="closeModal()">Zrušit</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         const products = [
             { name: 'Pivo 0.3L A', price: 30 },
@@ -185,7 +147,6 @@
             { name: 'Vratka kelímku', price: -50, red: true }
         ];
 
-        let selectedProduct = null;
         let order = [];
         let reports = JSON.parse(localStorage.getItem('reports')) || [];
 
@@ -196,30 +157,25 @@
                 const tile = document.createElement('div');
                 tile.className = 'tile' + (product.red ? ' red' : '');
                 tile.innerText = `${product.name}\n${product.price} Kč`;
-                tile.onclick = () => showQuantitySelection(product);
+                tile.onclick = () => addToOrder(product);
                 productContainer.appendChild(tile);
             });
         }
 
-        function showQuantitySelection(product) {
-            selectedProduct = product;
-            document.getElementById('quantity-input').value = '';
-            document.getElementById('quantity-modal').style.display = 'flex';
+        function addToOrder(product) {
+            const existingProductIndex = order.findIndex(item => item.name === product.name);
+            if (existingProductIndex !== -1) {
+                order[existingProductIndex].quantity += 1;
+            } else {
+                order.push({ ...product, quantity: 1 });
+            }
+            renderOrderSummary();
         }
 
-        function closeModal() {
-            document.getElementById('quantity-modal').style.display = 'none';
-        }
-
-        function confirmQuantity() {
-            const quantity = parseInt(document.getElementById('quantity-input').value) || 1;
-            addToOrder(selectedProduct, quantity);
-            closeModal();
-        }
-
-        function addToOrder(product, quantity) {
-            for (let i = 0; i < quantity; i++) {
-                order.push(product);
+        function updateQuantity(index, quantity) {
+            order[index].quantity = quantity;
+            if (order[index].quantity <= 0) {
+                order.splice(index, 1);
             }
             renderOrderSummary();
         }
@@ -238,13 +194,14 @@
                 const div = document.createElement('div');
                 div.className = 'order-item';
                 div.innerHTML = `
-                    ${item.name} - ${item.price} Kč
+                    ${item.name} - ${item.price} Kč x 
+                    <input type="number" value="${item.quantity}" min="1" oninput="updateQuantity(${index}, this.value)">
                     <button onclick="removeFromOrder(${index})">Storno</button>
                 `;
                 orderItems.appendChild(div);
-                totalPrice += item.price;
+                totalPrice += item.price * item.quantity;
                 if (item.name.includes('Pivo')) {
-                    totalPrice += 50; // Přidání zálohy na kelímek
+                    totalPrice += 50 * item.quantity; // Přidání zálohy na kelímek
                 }
             });
             document.getElementById('total-price').innerText = totalPrice;
@@ -298,7 +255,7 @@
                 reportDiv.className = 'report-item';
                 reportDiv.innerHTML = `
                     <strong>${report.date}</strong><br>
-                    ${report.items.map(item => `${item.name} (${item.price} Kč)`).join(', ')}<br>
+                    ${report.items.map(item => `${item.name} (${item.price} Kč) x ${item.quantity}`).join(', ')}<br>
                     <strong>Celkem: ${report.total} Kč</strong>
                 `;
                 lastOrdersItems.appendChild(reportDiv);
@@ -330,7 +287,7 @@
                 reportDiv.className = 'report-item';
                 reportDiv.innerHTML = `
                     <strong>${report.date}</strong><br>
-                    ${report.items.map(item => `${item.name} (${item.price} Kč)`).join(', ')}<br>
+                    ${report.items.map(item => `${item.name} (${item.price} Kč) x ${item.quantity}`).join(', ')}<br>
                     <strong>Celkem: ${report.total} Kč</strong>
                 `;
                 reportItems.appendChild(reportDiv);
@@ -344,7 +301,7 @@
                     if (!dailyReport[item.name]) {
                         dailyReport[item.name] = 0;
                     }
-                    dailyReport[item.name] += item.price;
+                    dailyReport[item.name] += item.price * item.quantity;
                 });
             });
             const reportItems = document.getElementById('report-items');
