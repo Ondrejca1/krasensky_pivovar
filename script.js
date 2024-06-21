@@ -160,7 +160,6 @@ $(document).ready(function() {
 
         $('#total-modal-text').text(`Celková cena: ${totalOrderPrice} Kč`);
         $('#total-modal').css('display', 'block');
-        resetOrder();
     }
 
     function resetOrder() {
@@ -195,6 +194,7 @@ $(document).ready(function() {
     });
     $('#close-modal').click(function() {
         $('#total-modal').css('display', 'none');
+        resetOrder();
     });
 
     const reportButton = $('<button>').text('Zobrazit report').addClass('submit-button');
