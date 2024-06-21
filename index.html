@@ -56,10 +56,11 @@
         .calculator input, .calculator button {
             width: 100%;
             margin: 10px 0;
-            padding: 10px;
+            padding: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
             text-align: center;
+            font-size: 18px;
         }
         .report-item {
             margin: 5px 0;
@@ -83,14 +84,16 @@
             margin-left: 10px;
             padding: 5px;
             text-align: center;
+            font-size: 18px;
         }
         button {
             cursor: pointer;
             background-color: #007BFF;
             color: white;
             border: none;
-            padding: 10px;
+            padding: 15px;
             border-radius: 5px;
+            font-size: 18px;
             transition: background-color 0.3s;
         }
         button:active {
@@ -190,7 +193,7 @@
         }
 
         function updateQuantity(index, quantity) {
-            order[index].quantity = parseInt(quantity) || 1;
+            order[index].quantity = parseInt(quantity) || 0;
             if (order[index].quantity <= 0) {
                 order.splice(index, 1);
             }
@@ -212,7 +215,7 @@
                 div.className = 'order-item';
                 div.innerHTML = `
                     ${item.name} - ${item.price} Kč x 
-                    <input type="number" value="${item.quantity}" min="1" inputmode="numeric" oninput="updateQuantity(${index}, this.value)">
+                    <input type="number" value="${item.quantity}" min="0" inputmode="numeric" oninput="updateQuantity(${index}, this.value)">
                     <button onclick="removeFromOrder(${index})">Storno</button>
                 `;
                 orderItems.appendChild(div);
@@ -372,4 +375,4 @@
 </body>
 </html>
 
-<!-- Verze 1.15 -->
+<!-- Verze 1.16 -->
