@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stánek s pivem - Krásenský pivovar</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link href="styles.css" rel="stylesheet">
 </head>
 <body>
     <h1>Stánek s pivem - Krásenský pivovar</h1>
@@ -15,13 +14,12 @@
             <form id="portas-form">
                 <input type="hidden" name="name" value="Portáš 11">
                 <input type="hidden" name="price" value="50">
-                <label for="size-portas">Velikost:</label>
+                <label for="size">Velikost:</label>
                 <select id="size-portas" name="size" class="size-input">
                     <option value="0.3">0,3l</option>
                     <option value="0.5">0,5l</option>
                 </select>
-                <br>
-                <label for="quantity-portas">Množství:</label>
+                <label for="quantity">Množství:</label>
                 <select id="quantity-portas" name="quantity" class="quantity-input">
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -42,13 +40,12 @@
             <form id="krasenska-12-form">
                 <input type="hidden" name="name" value="Krásenská 12">
                 <input type="hidden" name="price" value="45">
-                <label for="size-krasenska-12">Velikost:</label>
+                <label for="size">Velikost:</label>
                 <select id="size-krasenska-12" name="size" class="size-input">
                     <option value="0.3">0,3l</option>
                     <option value="0.5">0,5l</option>
                 </select>
-                <br>
-                <label for="quantity-krasenska-12">Množství:</label>
+                <label for="quantity">Množství:</label>
                 <select id="quantity-krasenska-12" name="quantity" class="quantity-input">
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -69,13 +66,12 @@
             <form id="krasenska-13-form">
                 <input type="hidden" name="name" value="Krásenská 13">
                 <input type="hidden" name="price" value="60">
-                <label for="size-krasenska-13">Velikost:</label>
+                <label for="size">Velikost:</label>
                 <select id="size-krasenska-13" name="size" class="size-input">
                     <option value="0.3">0,3l</option>
                     <option value="0.5">0,5l</option>
                 </select>
-                <br>
-                <label for="quantity-krasenska-13">Množství:</label>
+                <label for="quantity">Množství:</label>
                 <select id="quantity-krasenska-13" name="quantity" class="quantity-input">
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -96,13 +92,12 @@
             <form id="virgil-form">
                 <input type="hidden" name="name" value="Virgil 12">
                 <input type="hidden" name="price" value="55">
-                <label for="size-virgil">Velikost:</label>
+                <label for="size">Velikost:</label>
                 <select id="size-virgil" name="size" class="size-input">
                     <option value="0.3">0,3l</option>
                     <option value="0.5">0,5l</option>
                 </select>
-                <br>
-                <label for="quantity-virgil">Množství:</label>
+                <label for="quantity">Množství:</label>
                 <select id="quantity-virgil" name="quantity" class="quantity-input">
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -123,13 +118,12 @@
             <form id="pale-ale-form">
                 <input type="hidden" name="name" value="PALE ALE 14">
                 <input type="hidden" name="price" value="50">
-                <label for="size-pale-ale">Velikost:</label>
+                <label for="size">Velikost:</label>
                 <select id="size-pale-ale" name="size" class="size-input">
                     <option value="0.3">0,3l</option>
                     <option value="0.5">0,5l</option>
                 </select>
-                <br>
-                <label for="quantity-pale-ale">Množství:</label>
+                <label for="quantity">Množství:</label>
                 <select id="quantity-pale-ale" name="quantity" class="quantity-input">
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -150,7 +144,7 @@
             <form id="pet-lahve-form">
                 <input type="hidden" name="name" value="Pet láhev 1L">
                 <input type="hidden" name="price" value="150">
-                <label for="quantity-pet-lahve">Množství:</label>
+                <label for="quantity">Množství:</label>
                 <select id="quantity-pet-lahve" name="quantity" class="quantity-input">
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -171,7 +165,7 @@
             <form id="return-cups-form">
                 <input type="hidden" name="name" value="Vratka kelímku">
                 <input type="hidden" name="price" value="-50">
-                <label for="quantity-return-cups">Množství:</label>
+                <label for="quantity">Množství:</label>
                 <select id="quantity-return-cups" name="quantity" class="quantity-input">
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -202,7 +196,7 @@
             <form id="prodej-kelimek-form">
                 <input type="hidden" name="name" value="Prodej kelímku">
                 <input type="hidden" name="price" value="50">
-                <label for="quantity-prodej-kelimek">Množství:</label>
+                <label for="quantity">Množství:</label>
                 <select id="quantity-prodej-kelimek" name="quantity" class="quantity-input">
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -245,6 +239,9 @@
             <br><br>
             <label for="tip-amount">Částka po zaokrouhlení (včetně dýška):</label>
             <input type="number" id="tip-amount" class="size-input" inputmode="numeric">
+            <br><br>
+            <label for="returned-cups">Počet vrácených kelímků:</label>
+            <input type="number" id="returned-cups" class="size-input" inputmode="numeric">
             <br><br>
             <span id="change-text"></span>
             <br><br>
