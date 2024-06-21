@@ -27,16 +27,18 @@
             text-align: center;
             border-radius: 10px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.1s;
         }
         .tile:active {
             background-color: #0056b3;
+            transform: scale(0.95);
         }
         .tile.red {
             background-color: #FF0000;
         }
         .tile.red:active {
             background-color: #cc0000;
+            transform: scale(0.95);
         }
         .container {
             display: flex;
@@ -94,16 +96,18 @@
             padding: 15px;
             border-radius: 5px;
             font-size: 18px;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.1s;
         }
         button:active {
             background-color: #0056b3;
+            transform: scale(0.95);
         }
         button.red {
             background-color: #FF0000;
         }
         button.red:active {
             background-color: #cc0000;
+            transform: scale(0.95);
         }
         @media (max-width: 600px) {
             .tile {
@@ -147,6 +151,9 @@
         <button class="red" onclick="resetReport()">Vynulovat report</button>
         <button onclick="downloadReport()">Stáhnout report</button>
         <div id="report-items"></div>
+    </div>
+    <div id="version">
+        <p>Verze 1.16</p>
     </div>
 
     <script>
