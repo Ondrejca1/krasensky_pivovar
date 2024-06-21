@@ -21,7 +21,7 @@
             justify-content: center;
             width: 22%;
             height: 100px;
-            margin: 10px;
+            margin: 5px;
             background-color: #007BFF;
             color: white;
             text-align: center;
@@ -56,6 +56,20 @@
         }
         .report-item {
             margin: 5px 0;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 5px 0;
+        }
+        .order-item button {
+            background-color: #FF0000;
+            color: white;
+            border: none;
+            padding: 5px;
+            border-radius: 5px;
+            cursor: pointer;
         }
         button {
             cursor: pointer;
@@ -132,6 +146,7 @@
 
         function renderProducts() {
             const productContainer = document.getElementById('products');
+            productContainer.innerHTML = '';
             products.forEach(product => {
                 const tile = document.createElement('div');
                 tile.className = 'tile' + (product.red ? ' red' : '');
@@ -149,14 +164,23 @@
             renderOrderSummary();
         }
 
+        function removeFromOrder(index) {
+            order.splice(index, 1);
+            renderOrderSummary();
+        }
+
         function renderOrderSummary() {
             const orderItems = document.getElementById('order-items');
             const calculatorTotalPrice = document.getElementById('calculator-total-price');
             orderItems.innerHTML = '';
             let totalPrice = 0;
-            order.forEach(item => {
+            order.forEach((item, index) => {
                 const div = document.createElement('div');
-                div.innerText = `${item.name} - ${item.price} Kč`;
+                div.className = 'order-item';
+                div.innerHTML = `
+                    ${item.name} - ${item.price} Kč
+                    <button onclick="removeFromOrder(${index})">Storno</button>
+                `;
                 orderItems.appendChild(div);
                 totalPrice += item.price;
                 if (item.name.includes('Pivo')) {
