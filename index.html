@@ -161,7 +161,7 @@
         <div id="report-items"></div>
     </div>
     <div id="version">
-        <p>Verze 1.16</p>
+        <p>Verze 1.21</p>
     </div>
 
     <script>
@@ -206,15 +206,18 @@
                 order[existingProductIndex].quantity += 1;
             } else {
                 order.push({ ...product, quantity: 1 });
-                // Přidání položky pro kelímek, pokud ještě není v objednávce
+            }
+
+            // Přidání položky pro kelímek, pokud ještě není v objednávce a produkt není na seznamu výjimek
+            if (!['1L PET různé druhy', 'Prodej kelímku', 'Vratka kelímku'].includes(product.name)) {
                 if (!order.some(item => item.name === 'Prodej kelímku')) {
                     order.push({ name: 'Prodej kelímku', price: 50, quantity: 1 });
                 } else {
-                    // Navýšení počtu kelímků, pokud už jsou v objednávce
                     const cupIndex = order.findIndex(item => item.name === 'Prodej kelímku');
                     order[cupIndex].quantity += 1;
                 }
             }
+
             renderOrderSummary();
             highlightTile(product.name);
         }
@@ -420,5 +423,3 @@
     </script>
 </body>
 </html>
-
-<!-- Verze 1.18 -->
