@@ -19,7 +19,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            width: 100px;
+            width: 22%;
             height: 100px;
             margin: 10px;
             background-color: #007BFF;
@@ -68,40 +68,15 @@
         button.red {
             background-color: #FF0000;
         }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.4);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        @media (max-width: 600px) {
+            .tile {
+                width: 46%;
+            }
         }
-        .modal-content {
-            background-color: #fefefe;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 300px;
-            text-align: center;
-            border-radius: 10px;
-        }
-        .quantity-tile {
-            width: 50px;
-            height: 50px;
-            margin: 5px;
-            background-color: #007BFF;
-            color: white;
-            text-align: center;
-            line-height: 50px;
-            border-radius: 10px;
-            cursor: pointer;
+        @media (min-width: 601px) and (max-width: 1200px) {
+            .tile {
+                width: 22%;
+            }
         }
     </style>
 </head>
@@ -117,6 +92,7 @@
     </div>
     <div class="calculator">
         <h2>Kalkulačka</h2>
+        <div><strong>Celkem: </strong><span id="calculator-total-price">0</span> Kč</div>
         <input type="number" id="received-amount" placeholder="Zadaná částka (Kč)" inputmode="numeric">
         <input type="number" id="tip-amount" placeholder="Dýško (Kč)" inputmode="numeric">
         <div><strong>Vrátit: </strong><span id="change-amount">0</span> Kč</div>
@@ -136,16 +112,6 @@
         <div id="report-items"></div>
     </div>
 
-    <div id="quantity-modal" class="modal">
-        <div class="modal-content">
-            <h2>Zvolte množství</h2>
-            <div id="quantity-container">
-                <!-- Quantity Tiles -->
-            </div>
-            <button onclick="closeModal()">Zavřít</button>
-        </div>
-    </div>
-
     <script>
         const products = [
             { name: 'Pivo 0.3L A', price: 30 },
@@ -161,7 +127,6 @@
             { name: 'Vratka kelímku', price: -50, red: true }
         ];
 
-        let selectedProduct = null;
         let order = [];
         let reports = JSON.parse(localStorage.getItem('reports')) || [];
 
@@ -171,39 +136,22 @@
                 const tile = document.createElement('div');
                 tile.className = 'tile' + (product.red ? ' red' : '');
                 tile.innerText = `${product.name}\n${product.price} Kč`;
-                tile.onclick = () => showQuantitySelection(product);
+                tile.onclick = () => addToOrder(product);
                 productContainer.appendChild(tile);
             });
         }
 
-        function showQuantitySelection(product) {
-            selectedProduct = product;
-            const quantityContainer = document.getElementById('quantity-container');
-            quantityContainer.innerHTML = '';
-            for (let i = 1; i <= 10; i++) {
-                const tile = document.createElement('div');
-                tile.className = 'quantity-tile';
-                tile.innerText = i;
-                tile.onclick = () => addToOrder(product, i);
-                quantityContainer.appendChild(tile);
-            }
-            document.getElementById('quantity-modal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('quantity-modal').style.display = 'none';
-        }
-
-        function addToOrder(product, quantity) {
+        function addToOrder(product) {
+            const quantity = parseInt(prompt(`Zadejte množství pro ${product.name}`, 1)) || 1;
             for (let i = 0; i < quantity; i++) {
                 order.push(product);
             }
             renderOrderSummary();
-            closeModal();
         }
 
         function renderOrderSummary() {
             const orderItems = document.getElementById('order-items');
+            const calculatorTotalPrice = document.getElementById('calculator-total-price');
             orderItems.innerHTML = '';
             let totalPrice = 0;
             order.forEach(item => {
@@ -216,14 +164,20 @@
                 }
             });
             document.getElementById('total-price').innerText = totalPrice;
+            calculatorTotalPrice.innerText = totalPrice;
             calculateChange();
         }
 
         function calculateChange() {
             const receivedAmount = parseFloat(document.getElementById('received-amount').value) || 0;
             const tipAmount = parseFloat(document.getElementById('tip-amount').value) || 0;
-            const totalPrice = parseFloat(document.getElementById('total-price').innerText) || 0;
-            const changeAmount = receivedAmount - (totalPrice - tipAmount);
+            const totalPrice = parseFloat(document.getElementById('calculator-total-price').innerText) || 0;
+            let changeAmount = receivedAmount - totalPrice;
+
+            if (tipAmount > 0) {
+                changeAmount = receivedAmount - tipAmount;
+            }
+
             document.getElementById('change-amount').innerText = changeAmount >= 0 ? changeAmount : 0;
         }
 
@@ -232,7 +186,7 @@
             const reportItem = {
                 date: new Date().toLocaleDateString(),
                 items: [...order],
-                total: parseFloat(document.getElementById('total-price').innerText)
+                total: parseFloat(document.getElementById('calculator-total-price').innerText)
             };
             reports.push(reportItem);
             localStorage.setItem('reports', JSON.stringify(reports));
