@@ -1,6 +1,199 @@
 <!DOCTYPE html>
 <html lang="cs">
+<head><!DOCTYPE html>
+<html lang="cs">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prodej Piva</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 20px;
+        }
+        .tile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            background-color: #007BFF;
+            color: white;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .tile.red {
+            background-color: #FF0000;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .order-summary, .calculator, .report {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: white;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .calculator input, .calculator button {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .report-item {
+            margin: 5px 0;
+        }
+        button {
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Prodej Piva</h1>
+    <div class="container" id="products">
+        <!-- Products Tiles -->
+    </div>
+    <div class="order-summary" id="order-summary">
+        <h2>Souhrn objednávky</h2>
+        <div id="order-items"></div>
+        <div><strong>Celkem: </strong><span id="total-price">0</span> Kč</div>
+    </div>
+    <div class="calculator">
+        <h2>Kalkulačka</h2>
+        <input type="number" id="received-amount" placeholder="Zadaná částka (Kč)" inputmode="numeric">
+        <input type="number" id="tip-amount" placeholder="Dýško (Kč)" inputmode="numeric">
+        <div><strong>Vrátit: </strong><span id="change-amount">0</span> Kč</div>
+        <button onclick="completeOrder()">Dokončit objednávku</button>
+    </div>
+    <div class="report" id="report">
+        <h2>Report</h2>
+        <div id="report-items"></div>
+    </div>
+
+    <script>
+        const products = [
+            { name: 'Pivo 0.3L A', price: 30 },
+            { name: 'Pivo 0.5L A', price: 50 },
+            { name: 'Pivo 0.3L B', price: 30 },
+            { name: 'Pivo 0.5L B', price: 50 },
+            { name: 'Pivo 0.3L C', price: 30 },
+            { name: 'Pivo 0.5L C', price: 50 },
+            { name: 'Pivo 0.3L D', price: 30 },
+            { name: 'Pivo 0.5L D', price: 50 },
+            { name: 'PET láhev 1L', price: 100 },
+            { name: 'Prodej kelímku', price: 50 },
+            { name: 'Vratka kelímku', price: -50, red: true }
+        ];
+
+        let order = [];
+        let reports = JSON.parse(localStorage.getItem('reports')) || [];
+
+        function renderProducts() {
+            const productContainer = document.getElementById('products');
+            products.forEach(product => {
+                const tile = document.createElement('div');
+                tile.className = 'tile' + (product.red ? ' red' : '');
+                tile.innerText = `${product.name}\n${product.price} Kč`;
+                tile.onclick = () => addToOrder(product);
+                productContainer.appendChild(tile);
+            });
+        }
+
+        function addToOrder(product) {
+            const quantity = prompt(`Zadejte množství pro ${product.name}`, 1);
+            const quantityNumber = parseInt(quantity);
+            if (quantityNumber > 0) {
+                for (let i = 0; i < quantityNumber; i++) {
+                    order.push(product);
+                }
+                renderOrderSummary();
+            }
+        }
+
+        function renderOrderSummary() {
+            const orderItems = document.getElementById('order-items');
+            orderItems.innerHTML = '';
+            let totalPrice = 0;
+            order.forEach(item => {
+                const div = document.createElement('div');
+                div.innerText = `${item.name} - ${item.price} Kč`;
+                orderItems.appendChild(div);
+                totalPrice += item.price;
+                if (item.name.includes('Pivo')) {
+                    totalPrice += 50; // Přidání zálohy na kelímek
+                }
+            });
+            document.getElementById('total-price').innerText = totalPrice;
+            calculateChange();
+        }
+
+        function calculateChange() {
+            const receivedAmount = parseFloat(document.getElementById('received-amount').value) || 0;
+            const tipAmount = parseFloat(document.getElementById('tip-amount').value) || 0;
+            const totalPrice = parseFloat(document.getElementById('total-price').innerText) || 0;
+            const changeAmount = receivedAmount - totalPrice + tipAmount;
+            document.getElementById('change-amount').innerText = changeAmount >= 0 ? changeAmount : 0;
+        }
+
+        function completeOrder() {
+            if (order.length === 0) return;
+            const reportItem = {
+                date: new Date().toLocaleDateString(),
+                items: [...order],
+                total: parseFloat(document.getElementById('total-price').innerText)
+            };
+            reports.push(reportItem);
+            localStorage.setItem('reports', JSON.stringify(reports));
+            order = [];
+            renderOrderSummary();
+            renderReport();
+        }
+
+        function renderReport() {
+            const reportItems = document.getElementById('report-items');
+            reportItems.innerHTML = '';
+            reports.forEach(report => {
+                const reportDiv = document.createElement('div');
+                reportDiv.className = 'report-item';
+                reportDiv.innerHTML = `
+                    <strong>${report.date}</strong><br>
+                    ${report.items.map(item => `${item.name} (${item.price} Kč)`).join(', ')}<br>
+                    <strong>Celkem: ${report.total} Kč</strong>
+                `;
+                reportItems.appendChild(reportDiv);
+            });
+        }
+
+        document.getElementById('received-amount').addEventListener('input', calculateChange);
+        document.getElementById('tip-amount').addEventListener('input', calculateChange);
+
+        renderProducts();
+        renderReport();
+    </script>
+</body>
+</html>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prodej Piva</title>
