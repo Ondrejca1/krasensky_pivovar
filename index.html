@@ -36,7 +36,7 @@
             flex-wrap: wrap;
             justify-content: center;
         }
-        .order-summary, .calculator, .report {
+        .order-summary, .calculator, .report, .last-orders-report {
             margin: 20px;
             padding: 20px;
             border: 1px solid #ccc;
@@ -65,11 +65,30 @@
             padding: 10px;
             border-radius: 5px;
         }
-        .quantity-container {
+        .modal {
             display: none;
-            flex-wrap: wrap;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            display: flex;
             justify-content: center;
-            margin-top: 20px;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            border-radius: 10px;
         }
         .quantity-tile {
             width: 50px;
@@ -89,9 +108,6 @@
     <div class="container" id="products">
         <!-- Products Tiles -->
     </div>
-    <div class="quantity-container" id="quantity-container">
-        <!-- Quantity Tiles -->
-    </div>
     <div class="order-summary" id="order-summary">
         <h2>Souhrn objednávky</h2>
         <div id="order-items"></div>
@@ -104,12 +120,25 @@
         <div><strong>Vrátit: </strong><span id="change-amount">0</span> Kč</div>
         <button onclick="completeOrder()">Dokončit objednávku</button>
     </div>
+    <div class="last-orders-report">
+        <h2>Poslední 3 objednávky</h2>
+        <div id="last-orders-items"></div>
+    </div>
     <div class="report">
         <h2>Reporty</h2>
         <button onclick="showReport('all')">Sumář všech objednávek</button>
         <button onclick="showReport('daily')">Sumář za každý druh piva za den</button>
         <button onclick="showReport('totals')">Celkové částky za den</button>
         <div id="report-items"></div>
+    </div>
+
+    <div id="quantity-modal" class="modal">
+        <div class="modal-content">
+            <h2>Zvolte množství</h2>
+            <div id="quantity-container">
+                <!-- Quantity Tiles -->
+            </div>
+        </div>
     </div>
 
     <script>
@@ -153,7 +182,7 @@
                 tile.onclick = () => addToOrder(product, i);
                 quantityContainer.appendChild(tile);
             }
-            quantityContainer.style.display = 'flex';
+            document.getElementById('quantity-modal').style.display = 'flex';
         }
 
         function addToOrder(product, quantity) {
@@ -161,7 +190,7 @@
                 order.push(product);
             }
             renderOrderSummary();
-            document.getElementById('quantity-container').style.display = 'none';
+            document.getElementById('quantity-modal').style.display = 'none';
         }
 
         function renderOrderSummary() {
@@ -185,7 +214,7 @@
             const receivedAmount = parseFloat(document.getElementById('received-amount').value) || 0;
             const tipAmount = parseFloat(document.getElementById('tip-amount').value) || 0;
             const totalPrice = parseFloat(document.getElementById('total-price').innerText) || 0;
-            const changeAmount = receivedAmount - totalPrice + tipAmount;
+            const changeAmount = receivedAmount - (totalPrice - tipAmount);
             document.getElementById('change-amount').innerText = changeAmount >= 0 ? changeAmount : 0;
         }
 
@@ -201,9 +230,43 @@
             order = [];
             renderOrderSummary();
             renderReport();
+            renderLastOrdersReport();
+        }
+
+        function renderLastOrdersReport() {
+            const lastOrdersItems = document.getElementById('last-orders-items');
+            lastOrdersItems.innerHTML = '';
+            const lastOrders = reports.slice(-3).reverse();
+            lastOrders.forEach(report => {
+                const reportDiv = document.createElement('div');
+                reportDiv.className = 'report-item';
+                reportDiv.innerHTML = `
+                    <strong>${report.date}</strong><br>
+                    ${report.items.map(item => `${item.name} (${item.price} Kč)`).join(', ')}<br>
+                    <strong>Celkem: ${report.total} Kč</strong>
+                `;
+                lastOrdersItems.appendChild(reportDiv);
+            });
         }
 
         function renderReport() {
+            const reportItems = document.getElementById('report-items');
+            reportItems.innerHTML = '';
+        }
+
+        function showReport(type) {
+            const reportItems = document.getElementById('report-items');
+            reportItems.innerHTML = '';
+            if (type === 'all') {
+                renderAllOrdersReport();
+            } else if (type === 'daily') {
+                renderDailyReport();
+            } else if (type === 'totals') {
+                renderTotalsReport();
+            }
+        }
+
+        function renderAllOrdersReport() {
             const reportItems = document.getElementById('report-items');
             reportItems.innerHTML = '';
             reports.forEach(report => {
@@ -218,44 +281,42 @@
             });
         }
 
-        function showReport(type) {
+        function renderDailyReport() {
+            const dailyReport = {};
+            reports.forEach(report => {
+                report.items.forEach(item => {
+                    if (!dailyReport[item.name]) {
+                        dailyReport[item.name] = 0;
+                    }
+                    dailyReport[item.name] += item.price;
+                });
+            });
             const reportItems = document.getElementById('report-items');
-            reportItems.innerHTML = '';
-            if (type === 'all') {
-                renderReport();
-            } else if (type === 'daily') {
-                const dailyReport = {};
-                reports.forEach(report => {
-                    report.items.forEach(item => {
-                        if (!dailyReport[item.name]) {
-                            dailyReport[item.name] = 0;
-                        }
-                        dailyReport[item.name] += item.price;
-                    });
-                });
-                Object.keys(dailyReport).forEach(key => {
-                    const div = document.createElement('div');
-                    div.className = 'report-item';
-                    div.innerText = `${key}: ${dailyReport[key]} Kč`;
-                    reportItems.appendChild(div);
-                });
-            } else if (type === 'totals') {
-                let totalSum = 0;
-                reports.forEach(report => {
-                    totalSum += report.total;
-                });
+            Object.keys(dailyReport).forEach(key => {
                 const div = document.createElement('div');
                 div.className = 'report-item';
-                div.innerText = `Celkem: ${totalSum} Kč`;
+                div.innerText = `${key}: ${dailyReport[key]} Kč`;
                 reportItems.appendChild(div);
-            }
+            });
+        }
+
+        function renderTotalsReport() {
+            let totalSum = 0;
+            reports.forEach(report => {
+                totalSum += report.total;
+            });
+            const div = document.createElement('div');
+            div.className = 'report-item';
+            div.innerText = `Celkem: ${totalSum} Kč`;
+            const reportItems = document.getElementById('report-items');
+            reportItems.appendChild(div);
         }
 
         document.getElementById('received-amount').addEventListener('input', calculateChange);
         document.getElementById('tip-amount').addEventListener('input', calculateChange);
 
         renderProducts();
-        renderReport();
+        renderLastOrdersReport();
     </script>
 </body>
 </html>
