@@ -84,7 +84,7 @@ $(document).ready(function() {
             removeButton.click(function() {
                 listItem.remove();
                 cupsSummary.quantity -= quantity;
-                cupsSummary.total -= totalPriceForItem;
+                cupsSummary.total += totalPriceForItem;
                 updateTotalPrice();
             });
 
@@ -92,14 +92,10 @@ $(document).ready(function() {
             orderList.append(listItem);
 
             cupsSummary.quantity -= quantity;
-            cupsSummary.total -= totalPriceForItem;
+            cupsSummary.total += totalPriceForItem;
         }
 
         updateTotalPrice();
-
-        // Reset form fields
-        $(this).find('select[name="size"]').val('0.3');
-        $(this).find('select[name="quantity"]').val('1');
     });
 
     function updateTotalPrice() {
@@ -164,7 +160,6 @@ $(document).ready(function() {
 
         $('#total-modal-text').text(`Celková cena: ${totalOrderPrice} Kč`);
         $('#total-modal').css('display', 'block');
-        $('#total-modal-text').css('color', '#2c3e50'); // Ensure text color is visible
         resetOrder();
     }
 
@@ -185,21 +180,19 @@ $(document).ready(function() {
         updateTotalPrice();
         $('#received-amount').val('');
         $('#tip-amount').val('');
+        $('#returned-cups').val('');
         $('#change-text').text('');
     }
 
     $('#complete-order').click(completeOrder);
-
-    function calculateChange() {
+    $('#received-amount, #tip-amount, #returned-cups').on('input', function() {
         const receivedAmount = parseFloat($('#received-amount').val()) || 0;
         const tipAmount = parseFloat($('#tip-amount').val()) || 0;
+        const returnedCups = parseFloat($('#returned-cups').val()) || 0;
         const totalOrderPrice = parseInt($('#total-modal-text').text().replace('Celková cena: ', '').replace(' Kč', ''));
-        const change = (tipAmount > 0 ? receivedAmount - tipAmount : receivedAmount - totalOrderPrice);
+        const change = (tipAmount > 0 ? receivedAmount - tipAmount : receivedAmount - totalOrderPrice) + (returnedCups * 50);
         $('#change-text').text(`Vrátit: ${change} Kč`);
-    }
-
-    $('#received-amount, #tip-amount').on('input', calculateChange);
-
+    });
     $('#close-modal').click(function() {
         $('#total-modal').css('display', 'none');
     });
