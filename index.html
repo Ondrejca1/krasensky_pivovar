@@ -27,9 +27,16 @@
             text-align: center;
             border-radius: 10px;
             cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .tile:active {
+            background-color: #0056b3;
         }
         .tile.red {
             background-color: #FF0000;
+        }
+        .tile.red:active {
+            background-color: #cc0000;
         }
         .container {
             display: flex;
@@ -84,9 +91,16 @@
             border: none;
             padding: 10px;
             border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:active {
+            background-color: #0056b3;
         }
         button.red {
             background-color: #FF0000;
+        }
+        button.red:active {
+            background-color: #cc0000;
         }
         @media (max-width: 600px) {
             .tile {
@@ -163,6 +177,9 @@
         }
 
         function addToOrder(product) {
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
             const existingProductIndex = order.findIndex(item => item.name === product.name);
             if (existingProductIndex !== -1) {
                 order[existingProductIndex].quantity += 1;
@@ -173,7 +190,7 @@
         }
 
         function updateQuantity(index, quantity) {
-            order[index].quantity = quantity;
+            order[index].quantity = parseInt(quantity) || 1;
             if (order[index].quantity <= 0) {
                 order.splice(index, 1);
             }
@@ -195,7 +212,7 @@
                 div.className = 'order-item';
                 div.innerHTML = `
                     ${item.name} - ${item.price} Kč x 
-                    <input type="number" value="${item.quantity}" min="1" oninput="updateQuantity(${index}, this.value)">
+                    <input type="number" value="${item.quantity}" min="1" inputmode="numeric" oninput="updateQuantity(${index}, this.value)">
                     <button onclick="removeFromOrder(${index})">Storno</button>
                 `;
                 orderItems.appendChild(div);
@@ -224,8 +241,10 @@
 
         function completeOrder() {
             if (order.length === 0) return;
+            const now = new Date();
             const reportItem = {
-                date: new Date().toLocaleDateString(),
+                date: now.toLocaleDateString(),
+                time: now.toLocaleTimeString(),
                 items: [...order],
                 total: parseFloat(document.getElementById('calculator-total-price').innerText)
             };
@@ -254,7 +273,7 @@
                 const reportDiv = document.createElement('div');
                 reportDiv.className = 'report-item';
                 reportDiv.innerHTML = `
-                    <strong>${report.date}</strong><br>
+                    <strong>${report.date} <span style="color: red;">${report.time}</span></strong><br>
                     ${report.items.map(item => `${item.name} (${item.price} Kč) x ${item.quantity}`).join(', ')}<br>
                     <strong>Celkem: ${report.total} Kč</strong>
                 `;
@@ -286,7 +305,7 @@
                 const reportDiv = document.createElement('div');
                 reportDiv.className = 'report-item';
                 reportDiv.innerHTML = `
-                    <strong>${report.date}</strong><br>
+                    <strong>${report.date} <span style="color: red;">${report.time}</span></strong><br>
                     ${report.items.map(item => `${item.name} (${item.price} Kč) x ${item.quantity}`).join(', ')}<br>
                     <strong>Celkem: ${report.total} Kč</strong>
                 `;
@@ -352,3 +371,5 @@
     </script>
 </body>
 </html>
+
+<!-- Verze 1.15 -->
