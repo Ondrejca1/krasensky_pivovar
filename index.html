@@ -206,6 +206,14 @@
                 order[existingProductIndex].quantity += 1;
             } else {
                 order.push({ ...product, quantity: 1 });
+                // Přidání položky pro kelímek, pokud ještě není v objednávce
+                if (!order.some(item => item.name === 'Prodej kelímku')) {
+                    order.push({ name: 'Prodej kelímku', price: 50, quantity: 1 });
+                } else {
+                    // Navýšení počtu kelímků, pokud už jsou v objednávce
+                    const cupIndex = order.findIndex(item => item.name === 'Prodej kelímku');
+                    order[cupIndex].quantity += 1;
+                }
             }
             renderOrderSummary();
             highlightTile(product.name);
@@ -232,7 +240,17 @@
         }
 
         function removeFromOrder(index) {
-            order.splice(index, 1);
+            const removedItem = order.splice(index, 1)[0];
+            // Snížení počtu kelímků při odebrání piva z objednávky
+            if (removedItem.name !== 'Prodej kelímku' && removedItem.name !== 'Vratka kelímku') {
+                const cupIndex = order.findIndex(item => item.name === 'Prodej kelímku');
+                if (cupIndex !== -1) {
+                    order[cupIndex].quantity -= removedItem.quantity;
+                    if (order[cupIndex].quantity <= 0) {
+                        order.splice(cupIndex, 1);
+                    }
+                }
+            }
             renderOrderSummary();
         }
 
@@ -251,9 +269,6 @@
                 `;
                 orderItems.appendChild(div);
                 totalPrice += item.price * item.quantity;
-                if (item.name.includes('Pivo')) {
-                    totalPrice += 50 * item.quantity; // Přidání zálohy na kelímek
-                }
             });
             document.getElementById('total-price').innerText = totalPrice;
             calculatorTotalPrice.innerText = totalPrice;
