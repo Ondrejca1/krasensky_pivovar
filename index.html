@@ -42,7 +42,7 @@
             width: 90%;
             max-width: 400px;
         }
-        .calculator input {
+        .calculator input, .calculator button {
             width: 100%;
             margin: 10px 0;
             padding: 10px;
@@ -51,6 +51,14 @@
         }
         .report-item {
             margin: 5px 0;
+        }
+        button {
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -63,6 +71,7 @@
         <h2>Souhrn objednávky</h2>
         <div id="order-items"></div>
         <div><strong>Celkem: </strong><span id="total-price">0</span> Kč</div>
+        <button onclick="completeOrder()">Dokončit objednávku</button>
     </div>
     <div class="calculator">
         <h2>Kalkulačka</h2>
@@ -90,6 +99,7 @@
         ];
 
         let order = [];
+        let reports = JSON.parse(localStorage.getItem('reports')) || [];
 
         function renderProducts() {
             const productContainer = document.getElementById('products');
@@ -116,10 +126,12 @@
                 div.innerText = `${item.name} - ${item.price} Kč`;
                 orderItems.appendChild(div);
                 totalPrice += item.price;
+                if (item.name.includes('Pivo')) {
+                    totalPrice += 50; // Přidání zálohy na kelímek
+                }
             });
             document.getElementById('total-price').innerText = totalPrice;
             calculateChange();
-            renderReport();
         }
 
         function calculateChange() {
@@ -130,21 +142,32 @@
             document.getElementById('change-amount').innerText = changeAmount >= 0 ? changeAmount : 0;
         }
 
+        function completeOrder() {
+            if (order.length === 0) return;
+            const reportItem = {
+                date: new Date().toLocaleDateString(),
+                items: [...order],
+                total: parseFloat(document.getElementById('total-price').innerText)
+            };
+            reports.push(reportItem);
+            localStorage.setItem('reports', JSON.stringify(reports));
+            order = [];
+            renderOrderSummary();
+            renderReport();
+        }
+
         function renderReport() {
             const reportItems = document.getElementById('report-items');
             reportItems.innerHTML = '';
-            const reportMap = {};
-            order.forEach(item => {
-                if (!reportMap[item.name]) {
-                    reportMap[item.name] = 0;
-                }
-                reportMap[item.name] += 1;
-            });
-            Object.keys(reportMap).forEach(key => {
-                const div = document.createElement('div');
-                div.className = 'report-item';
-                div.innerText = `${key}: ${reportMap[key]}`;
-                reportItems.appendChild(div);
+            reports.forEach(report => {
+                const reportDiv = document.createElement('div');
+                reportDiv.className = 'report-item';
+                reportDiv.innerHTML = `
+                    <strong>${report.date}</strong><br>
+                    ${report.items.map(item => `${item.name} (${item.price} Kč)`).join(', ')}<br>
+                    <strong>Celkem: ${report.total} Kč</strong>
+                `;
+                reportItems.appendChild(reportDiv);
             });
         }
 
@@ -152,6 +175,7 @@
         document.getElementById('tip-amount').addEventListener('input', calculateChange);
 
         renderProducts();
+        renderReport();
     </script>
 </body>
 </html>
