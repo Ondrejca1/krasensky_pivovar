@@ -92,6 +92,39 @@
                 width: 22%;
             }
         }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            border-radius: 10px;
+        }
+        .modal-content input {
+            width: 80%;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 20px;
+        }
     </style>
 </head>
 <body>
@@ -126,6 +159,17 @@
         <div id="report-items"></div>
     </div>
 
+    <div id="quantity-modal" class="modal">
+        <div class="modal-content">
+            <h2>Zadejte množství</h2>
+            <input type="number" id="quantity-input" inputmode="numeric" min="1" value="1">
+            <div>
+                <button onclick="confirmQuantity()">OK</button>
+                <button onclick="closeModal()">Zrušit</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const products = [
             { name: 'Pivo 0.3L A', price: 30 },
@@ -141,6 +185,7 @@
             { name: 'Vratka kelímku', price: -50, red: true }
         ];
 
+        let selectedProduct = null;
         let order = [];
         let reports = JSON.parse(localStorage.getItem('reports')) || [];
 
@@ -151,13 +196,27 @@
                 const tile = document.createElement('div');
                 tile.className = 'tile' + (product.red ? ' red' : '');
                 tile.innerText = `${product.name}\n${product.price} Kč`;
-                tile.onclick = () => addToOrder(product);
+                tile.onclick = () => showQuantitySelection(product);
                 productContainer.appendChild(tile);
             });
         }
 
-        function addToOrder(product) {
-            const quantity = parseInt(prompt(`Zadejte množství pro ${product.name}`, 1)) || 1;
+        function showQuantitySelection(product) {
+            selectedProduct = product;
+            document.getElementById('quantity-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('quantity-modal').style.display = 'none';
+        }
+
+        function confirmQuantity() {
+            const quantity = parseInt(document.getElementById('quantity-input').value) || 1;
+            addToOrder(selectedProduct, quantity);
+            closeModal();
+        }
+
+        function addToOrder(product, quantity) {
             for (let i = 0; i < quantity; i++) {
                 order.push(product);
             }
