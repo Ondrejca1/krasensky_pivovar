@@ -162,7 +162,7 @@
     <div id="quantity-modal" class="modal">
         <div class="modal-content">
             <h2>Zadejte množství</h2>
-            <input type="number" id="quantity-input" inputmode="numeric" min="1" value="1">
+            <input type="number" id="quantity-input" inputmode="numeric" min="1">
             <div>
                 <button onclick="confirmQuantity()">OK</button>
                 <button onclick="closeModal()">Zrušit</button>
@@ -203,6 +203,7 @@
 
         function showQuantitySelection(product) {
             selectedProduct = product;
+            document.getElementById('quantity-input').value = '';
             document.getElementById('quantity-modal').style.display = 'flex';
         }
 
@@ -277,6 +278,14 @@
             renderOrderSummary();
             renderReport();
             renderLastOrdersReport();
+            resetCalculator();
+        }
+
+        function resetCalculator() {
+            document.getElementById('received-amount').value = '';
+            document.getElementById('tip-amount').value = '';
+            document.getElementById('change-amount').innerText = '0';
+            document.getElementById('calculator-total-price').innerText = '0';
         }
 
         function renderLastOrdersReport() {
